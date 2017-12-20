@@ -26,7 +26,6 @@ void renderScene(void) {
 	glVertex2f(100, 200);
 	glEnd();
 	}*/
-
 	for (int i = 1; i < mouseList.size(); i++) {
 		std::pair<int, int> pos1 = mouseList[i - 1];
 		std::pair<int, int> pos2 = mouseList[i];
@@ -44,6 +43,14 @@ void renderScene(void) {
 			break;
 		}
 	}
+
+	//glPointSize(5.0f);
+	glBegin(GL_POINTS);
+	for (int i = 0; i < mouseList.size(); i++) {
+		std::pair<int, int> pos = mouseList[i];
+		glVertex2i(pos.first, pos.second);
+	}
+	glEnd();
 
 	/*glBegin(GL_TRIANGLES);
 		glVertex3f(-0.5,-0.5,0.0);
