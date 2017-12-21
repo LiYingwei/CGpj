@@ -135,6 +135,7 @@ std::vector<std::pair<int,int>> mouseList;
 
 int window_width = 320;
 int window_height = 320;
+int cursorX, cursorY;
 
 char screenBuffer[MAXH][MAXW][3];
 bool fill_flag = false;
@@ -250,19 +251,13 @@ void renderScene(void)
         //glDrawPixels(MAXW, MAXH, GL_RGB, GL_UNSIGNED_BYTE, screenBuffer);
     }
 
-    glutSwapBuffers();
-    glFlush();
-}
-
-void readPolygon()
-{
-    FILE *fin = fopen("polygon.txt", "r");
-    int n;
-    fscanf(fin, "%d\n", &n);
-    for (int i = 0; i < n; i++) {
-        int x, y;
-        fscanf(fin, "%d%d", &x, &y);
+    if (mouseList.size() > 0 && !fill_flag) {
+        Point p(mouseList[mouseList.size() - 1]);
+        drawLine(Point(cursorX, cursorY), (Point)p, orange);
     }
+
+    glutSwapBuffers();
+    //glFlush();
 }
 
 void onClick(int button, int state, int x, int y)
@@ -279,19 +274,10 @@ void onClick(int button, int state, int x, int y)
 
 void onMouseMove(int x, int y)
 {
-    static int lx, ly;
-    static int jiffy = 0;
-    if (mouseList.size() > 0 && !fill_flag) {
-        Point p(mouseList[mouseList.size() - 1]);
-        if ((jiffy++ & 0x3) == 0) {
-            drawLine(Point(lx, ly), (Point)p, 0);
-            renderScene();
-            drawLine(Point(x, y), (Point)p, orange);
-            lx = x; ly = y;
-            glutSwapBuffers();
-            glFlush();
-        }
-        //printf("jiffy=%d\n", jiffy);
+    static long jiffy = 0;
+    if ((jiffy++ & 0x3) == 0) {
+        cursorX = x, cursorY = y;
+        renderScene();
     }
 }
 
@@ -304,6 +290,17 @@ void onKeyPress(unsigned char key, int x, int y)
         break;
     }
     glutPostRedisplay();
+}
+
+void readPolygon()
+{
+    FILE *fin = fopen("polygon.txt", "r");
+    int n;
+    fscanf(fin, "%d\n", &n);
+    for (int i = 0; i < n; i++) {
+        int x, y;
+        fscanf(fin, "%d%d", &x, &y);
+    }
 }
 
 void resize(int width, int height)
@@ -331,7 +328,7 @@ int main(int argc, char *argv[])
     glutMouseFunc(onClick);
     glutReshapeFunc(resize);
     glutKeyboardFunc(onKeyPress);
-    //glutPassiveMotionFunc(onMouseMove);
+    glutPassiveMotionFunc(onMouseMove);
 
     // enter GLUT event processing cycle
     glutMainLoop();
